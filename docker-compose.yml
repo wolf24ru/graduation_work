@@ -2,10 +2,11 @@ version: '3'
 
 services:
   db:
-    image: postgres
-    ports:
-      - "5430:5432"
+    image: 'postgres:latest'
+    restart: always
     env_file:
       - .env
+    ports:
+      - 5430:5432
     volumes:
       - ./db-data/:/var/lib/postgresql/data/
