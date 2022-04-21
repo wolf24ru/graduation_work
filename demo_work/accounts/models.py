@@ -2,10 +2,9 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext_lazy as _
 from django.db import models
-from demo_work.location.models import City, Region
+from location.models import City, Region
 
-from validator import PhoneNumberValidator
-
+from .validator import PhoneNumberValidator
 TYPE_USER = (
     ('shop', 'Магазин'),
     ('buyer', 'Покупатель'),
@@ -30,7 +29,7 @@ class UserManager(BaseUserManager):
         user.is_staff = False
         user.is_superuser = False
         user.set_password(password)
-        user.save(user=self._db)
+        user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password=None, **kwargs):
@@ -42,7 +41,7 @@ class UserManager(BaseUserManager):
         :return: user
         """
         user = self.create_user(
-            email,
+            email=email,
             password=password,
             **kwargs
         )
@@ -65,10 +64,10 @@ class CustomUser(AbstractUser):
     type: Тип пользователя
     """
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['email', 'type']
+    REQUIRED_FIELDS = []
     objects = UserManager()
 
-    email = models.EmailField(_('Email adres'),unique=True)
+    email = models.EmailField(_('Email adres'), unique=True)
     company = models.CharField(_('Company'), max_length=100, blank=True)
     position = models.CharField(_('position'), max_length=100, blank=True)
     username_validator = UnicodeUsernameValidator()
@@ -158,8 +157,8 @@ class Shop(models.Model):
     order_accepting: показатель может ли магазин принемать заказы
     """
 
-    url = models.URLField('URL', null=True, blank=True)
     name = models.CharField(_('shop\'s name'), max_length=58)
+    url = models.URLField('URL', null=True, blank=True)
     user = models.ForeignKey(CustomUser, verbose_name=_('User'),
                              related_name='shop', blank=True,
                              null=True, on_delete=models.CASCADE)
@@ -168,3 +167,22 @@ class Shop(models.Model):
         default=True,
         help_text=_('indicates the shop\'s ability to accept orders')
     )
+
+
+class ShopDelivery(models.Model):
+    shop = models. ForeignKey(Shop,
+                              verbose_name=_('shop'),
+                              related_name='shop_deliverys',
+                              blank=True,
+                              on_delete=models.CASCADE)
+    delivered_price = models.PositiveIntegerField(_('Delivery price'))
+    quantity = models.PositiveIntegerField(_('Quantity'),
+                                           help_text=_('Min quantity for price delivery'))
+
+    class Meta:
+        verbose_name = _('shop delivered')
+        verbose_name_plural = _('list of shop delivery')
+        constraints = [
+            models.UniqueConstraint(fields=['shop', 'quantity'],
+                                    name='unique_shop_delivery'),
+        ]

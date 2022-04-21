@@ -1,6 +1,6 @@
 from django.db import models
-from demo_work.category.models import Category
-from demo_work.accounts.models import Shop
+from category.models import Category
+from accounts.models import Shop
 from django.utils.translation import gettext_lazy as _
 
 
@@ -71,7 +71,7 @@ class ProductParameter(models.Model):
                                      related_name='product_parameters',
                                      blank=True,
                                      on_delete=models.CASCADE)
-    parameter =  models.ForeignKey(Parameter,
+    parameter = models.ForeignKey(Parameter,
                                    verbose_name=_('product\'s parameter'),
                                    related_name='product_parameter',
                                    blank=True,

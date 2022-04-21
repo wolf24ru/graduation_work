@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from demo_work.accounts.models import Shop
+from accounts.models import Shop
 
 
 class Category(models.Model):

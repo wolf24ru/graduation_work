@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from demo_work.product.models import ProductInfo
-from demo_work.accounts.models import CustomUser, Contact
+from product.models import ProductInfo
+from accounts.models import CustomUser, Contact
 
 STATUS_ORDER = (
     ('basket', 'В корзине'),
