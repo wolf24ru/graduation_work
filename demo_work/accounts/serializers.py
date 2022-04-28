@@ -24,3 +24,10 @@ class UserSerializer(serializers.ModelSerializer):
                   'email', 'company', 'position',
                   'username', 'contacts')
         read_only_fields = ('id',)
+
+
+class ShopSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shop
+        fields = ('id', 'name', 'order_accepting')
+        read_only_fields = ('id',)
