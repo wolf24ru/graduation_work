@@ -1,0 +1,40 @@
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from location.models import RegionCity
+from django.http import JsonResponse
+
+
+class LocationInfor(APIView):
+    queryset = RegionCity.objects.all()
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        response = {}
+        region_city = RegionCity.objects.all()
+        if request.data:
+            match request.data['search_for']:
+                case 'region':
+                    if 'search' in request.data and request.data['search']:
+                        for reg in region_city:
+                            if request.data['search'].lower() in str(reg.region).lower():
+                                response.update({reg.region.id: str(reg.region)})
+                    else:
+                        response.update({'Error': 'Not existent region'}, code=401)
+                case 'city':
+                    if 'search' in request.data and request.data['search']:
+                        response_list = []
+                        for city in region_city:
+                            if request.data['search'].lower() in str(city.city).lower():
+                                response_list.append({'region': {'id': city.region.id,
+                                                                 'name': str(city.region)},
+                                                      'city': {'id': city.city.id,
+                                                               'name': str(city.city)}})
+                        return JsonResponse({'data': response_list})
+                    else:
+                        response.update({'Error': 'Bad request'}, code=401)
+        else:
+            response.update({'Error': 'Bad request'}, code=401)
+        if not response:
+            response.update({'Error': 'Bad request'}, code=401)
+        return JsonResponse(response)
+
