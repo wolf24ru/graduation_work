@@ -23,8 +23,8 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api-token-auth/', views.obtain_auth_token),
     path('api/v1/accounts/', include('accounts.urls')),
-#     path('api/v1/category', include('category.urls')),
-#     path('api/v1/location', include('location.urls')),
+    path('api/v1/location/', include('location.urls')),
+    path('api/v1/product/', include('product.urls')),
+    path('api/v1/category/', include('category.urls')),
 #     path('api/v1/order', include('order.urls')),
-#     path('api/v1/product', include('product.urls')),
 ]
