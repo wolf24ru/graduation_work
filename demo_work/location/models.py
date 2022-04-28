@@ -35,4 +35,4 @@ class RegionCity(models.Model):
                              on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self}'
+        return f'{self.region}: {self.city}'

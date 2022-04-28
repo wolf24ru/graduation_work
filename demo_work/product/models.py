@@ -72,8 +72,8 @@ class ProductParameter(models.Model):
                                      blank=True,
                                      on_delete=models.CASCADE)
     parameter = models.ForeignKey(Parameter,
-                                   verbose_name=_('product\'s parameter'),
-                                   related_name='product_parameter',
-                                   blank=True,
-                                   on_delete=models.CASCADE)
+                                  verbose_name=_('product\'s parameter'),
+                                  related_name='product_parameters',
+                                  blank=True,
+                                  on_delete=models.CASCADE)
     value = models.CharField(_('value'), max_length=50)
