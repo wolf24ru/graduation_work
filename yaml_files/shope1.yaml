@@ -1,7 +1,7 @@
 shop: Дубик
 categories:
   - id: 1
-    namae: Стулья
+    name: Стулья
   - id: 2
     name: Шкафы
   - id: 3
