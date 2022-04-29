@@ -1,4 +1,5 @@
 
+import django
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Q
@@ -10,15 +11,16 @@ from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
 
 from accounts.models import Shop
-from category.models import Category
-from category.models import CategoryShop
-from product.models import ProductInfo, Product, Parameter, ProductParameter
-from product.serializers import ProductSerializer, ProductInfoSerializer
+from category.models import Category, CategoryShop
+from product.models import ProductInfo, Product, Parameter, ProductParameter, Img
+from product.serializers import ProductSerializer, ProductInfoSerializer, ProductInfoINSerializer
 
 
 class AddProducts(APIView):
-    """Добавление продуктов
+    """Добавление продуктов до 3х
+
     {data:
+        shop: id,
         products:
         [{
 
@@ -33,63 +35,97 @@ class AddProducts(APIView):
                 parameter: product_parameter,
                 value: product_value
             },
-        price: product_price
-        quantity: product_quantity
+        price: product_price,
+        quantity: product_quantity,
+        img: img_path
         }]
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
+
+        user = request.user
+        if not user.is_authenticated:
             return JsonResponse({'Error': 'Login required'}, status=401)
-        if request.user.type != 'shop':
+
+        if user.type != 'shop':
             return JsonResponse({'Error': 'User\'s type "shop" only'}, status=401)
-        try:
-            products = request.data['products']
-        except KeyError as e:
-            return JsonResponse({'Error': f'not exist parameter: {e}'}, status=401)
+
+        shop_id = request.data.get('shop')
+        if not shop_id and Shop.objects.get(id=shop_id).user.id != user.id:
+            return JsonResponse({'Error': 'not existed parameter "shop" or you not owner this shop'},
+                                status=401)
+
+        products = request.data.get('products')
+
+        if type(products) is list and len(products) < 4:
+            response_dict = {'category': {
+                                'create': [],
+                                'no_crete': []},
+                             'products': {
+                                 'create': [],
+                                 'no_crete': []
+                             }}
+
+            for product in products:
+                product_serializer = ProductInfoSerializer(data=product)
+                if not product_serializer.is_valid():
+                    return JsonResponse({'Error': product_serializer.errors}, status=401)
+
+                product_inform = product_serializer.initial_data
+                product_item = product_inform.get('product')
+                category_name = product_item.get('category')
+
+                try:
+                    category_object = Category.objects.get_or_create(name=category_name)
+                except django.db.utils.IntegrityError:
+                    return JsonResponse({'Error': 'try agen'})
+
+                if category_object[1]:
+                    response_dict.get('category').get('create').append(str(category_object[0]))
+                else:
+                    response_dict.get('category').get('no_crete').append(str(category_object[0]))
+                CategoryShop.objects.get_or_create(category=category_object[0], shop_id=shop_id)
+
+                product = Product.objects.get_or_create(name=product_item.get('name'),
+                                                        category=category_object[0])
+                if product[1]:
+                    response_dict.get('products').get('create').append(str(product[0]))
+                else:
+                    response_dict.get('products').get('no_crete').append(str(product[0]))
+                product_info = ProductInfo.objects.get_or_create(product=product[0],
+                                                                 external_id=product_inform.get('external_id'),
+                                                                 shop_id=shop_id,
+                                                                 price=product_inform.get('price'),
+                                                                 quantity=product_inform.get('quantity'))
+                #  TODo добавить валидацию картинки.
+                if product_inform.get('img'):
+                    Img.objects.get_or_create(product_info=product_info[0],
+                                              img=product_inform.get('img'))
+
+                for product_parameter in product_inform.get('product_parameters'):
+                    parameter_object = Parameter.objects.get_or_create(name=product_parameter.get('parameter'))
+
+                    ProductParameter.objects.get_or_create(product_info=product_info[0],
+                                                           parameter=parameter_object[0],
+                                                           value=product_parameter.get('value'))
+
+            return JsonResponse({'Msg': response_dict}, status=201)
+
+        elif len(products) >= 4:
+            JsonResponse({'msg': 'For add more then 4 products use method UpdateCatalog'}, status=401)
         else:
-            if type(products) is list and len(products) < 4:
-                for product in products:
-                    serializer = ProductInfoSerializer(data=product)
-                    if not serializer.is_valid():
-                        return JsonResponse({'Error': serializer.errors}, status=401)
-
-                products_set = ProductInfo.objects.prefetch_related('product_parameters__parameter',
-                                                                    'product_parameters',
-                                                                    'img')
-                print(product)
-                parameters_list = []
-                for _parameter in product['product_parameters']:
-                    parameters_list.append(Parameter(name=_parameter["parameter"]))
-
-                    # for category in data['categories']:
-                    #     category_object = Category.objects.get_or_create(id=category['id'],
-                    #                                                      category=category['name'])
-                    #     CategoryShop.object.get_or_create(category_id=category_object.id,
-                    #                                       shop_id=shop.id)
-                    # ProductInfo.objects.filter(shop_id=shop.id).delete()
-                    # for item in data['goods']:
-                    #     product = Product.odjects.get_or_create(name=item['name'],
-                    #                                             category_id=item['category'])
-                    #     product_info = ProductInfo.odjects.get_or_create(product_id=product.id,
-                    #                                                      external_id=item['id'],
-                    #                                                      shop_id=shop.id,
-                    #                                                      price=item['price'],
-                    #                                                      quantity=item['quantity'])
-                    #     for name, value in item['parameters'].items():
-                    #         parameter_object = Parameter.objects.get_or_create(name=name)
-                    #         ProductParameter.objects.create(product_info_id=product_info.id,
-                    #                                         parameter_id=parameter_object.id,
-                    #                                         value=value)
-                    # return JsonResponse({'Msg': 'all create'}, status=201)
-                    #
-
-            elif len(products) >= 4:
-                JsonResponse({'msg': 'For add more then 4 products use method UpdateCatalog'}, status=401)
-            else:
-                JsonResponse({'Error': 'bad request'}, status=401)
+            JsonResponse({'Error': 'bad request'}, status=401)
         return JsonResponse({'ok': 'ok'})
+
+
+# def value_return(data, key: str):
+#     try:
+#         value = data[key]
+#     except KeyError as e:
+#         return JsonResponse({'Error': f'not parameter {e}'}, status=400)
+#     else:
+#         return value
 
 
 class UpdateCatalog(APIView):
@@ -98,7 +134,7 @@ class UpdateCatalog(APIView):
 
     """
     permission_classes = [IsAuthenticated]
-
+    # TODO Уменьшить количество обращений к БД
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return JsonResponse({'Error': 'Login required'}, status=401)
@@ -117,26 +153,26 @@ class UpdateCatalog(APIView):
             else:
                 stream = get(url).content
                 data = load_yaml(stream, Loader=Loader)
-
-                shop = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
-                for category in data['categories']:
-                    category_object = Category.objects.get_or_create(id=category['id'],
-                                                                     category=category['name'])
-                    CategoryShop.object.get_or_create(category_id=category_object.id,
-                                                      shop_id=shop.id)
-                ProductInfo.objects.filter(shop_id=shop.id).delete()
-                for item in data['goods']:
-                    product = Product.odjects.get_or_create(name=item['name'],
-                                                            category_id=item['category'])
-                    product_info = ProductInfo.odjects.get_or_create(product_id=product.id,
-                                                                     external_id=item['id'],
-                                                                     shop_id=shop.id,
-                                                                     price=item['price'],
-                                                                     quantity=item['quantity'])
-                    for name, value in item['parameters'].items():
+                shop = Shop.objects.get_or_create(name=data.get('shop'),
+                                                  user_id=request.user.id)
+                for category in data.get('categories'):
+                    category_object = Category.objects.get_or_create(id=category.get('id'),
+                                                                     name=category.get('name'))
+                    CategoryShop.objects.get_or_create(category=category_object[0],
+                                                       shop=shop[0])
+                ProductInfo.objects.filter(shop=shop[0]).delete()
+                for item in data.get('goods'):
+                    product = Product.objects.get_or_create(name=item.get('name'),
+                                                            category_id=item.get('category'))
+                    product_info = ProductInfo.objects.get_or_create(product=product[0],
+                                                                     external_id=item.get('id'),
+                                                                     shop=shop[0],
+                                                                     price=item.get('price'),
+                                                                     quantity=item.get('quantity'))
+                    for name, value in item.get('parameters').items():
                         parameter_object = Parameter.objects.get_or_create(name=name)
-                        ProductParameter.objects.create(product_info_id=product_info.id,
-                                                        parameter_id=parameter_object.id,
+                        ProductParameter.objects.create(product_info=product_info[0],
+                                                        parameter=parameter_object[0],
                                                         value=value)
                 return JsonResponse({'Msg': 'all create'}, status=201)
         return JsonResponse({'Errors': 'Url error. Not specified basic arguments'})
@@ -155,22 +191,19 @@ class ProductInfoView(APIView):
     def get(self, request, *args, **kwargs):
 
         query = Q(shop__order_accepting=True)
-        try:
-            shop_id = request.quert_params['shop_id']
-            category_id = request.quert_params['category_id']
-        except KeyError as e:
-            return JsonResponse({'Error': f'not exist parameter: {e}'}, status=401)
-        else:
-            if shop_id:
-                query = query & Q(shop_id=shop_id)
+        shop_id = request.query_params.get('shop_id')
+        category_id = request.query_params.get('category_id')
 
-            if category_id:
-                query = query & Q(product__category_id=category_id)
+        if shop_id:
+            query = query & Q(shop_id=shop_id)
 
-            queryset = not ProductInfo.objects.filter(query).\
-                select_related('product__category', 'shop').\
-                prefetch_related('product_parameters__parameter', 'img').\
-                distinct()
+        if category_id:
+            query = query & Q(product__category_id=category_id)
 
-            serializer = ProductInfoSerializer(queryset, many=True)
-            return Response(serializer.data)
+        queryset = ProductInfo.objects.filter(query).\
+            select_related('product__category', 'shop').\
+            prefetch_related('product_parameters__parameter', 'img').\
+            distinct()
+
+        serializer = ProductInfoINSerializer(queryset, many=True)
+        return Response(serializer.data)

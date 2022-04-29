@@ -22,8 +22,7 @@ class Product(models.Model):
                                  verbose_name=_('Category'),
                                  related_name='products',
                                  blank=True,
-                                 on_delete=models.CASCADE
-                                 )
+                                 on_delete=models.CASCADE)
     class Meta:
         verbose_name = _('Product')
         verbose_name_plural = _('list products')
