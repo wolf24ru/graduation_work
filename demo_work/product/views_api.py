@@ -207,3 +207,5 @@ class ProductInfoView(APIView):
 
         serializer = ProductInfoINSerializer(queryset, many=True)
         return Response(serializer.data)
+
+

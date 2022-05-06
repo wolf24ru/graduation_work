@@ -1,17 +1,13 @@
-from django.core import validators
-from django.utils.deconstruct import deconstructible
-from django.utils.translation import gettext_lazy as _
+import re
 
 
-@deconstructible
-class PhoneNumberValidator(validators.RegexValidator):
-    regex = r"(\+?7|8)?[\- ]?(\(?\d{3}\)?)?[\- ]?(\d{7}|\d[\-\d ]{5,7}\d)[ |\,]"
-    message = _(
-        "Enter a valid phone number. Format for phone number: "
-        "+7 (XXX) XXX XX-XX"
-        "+7XXXXXXXXXX"
-        "8XXXXXXXXXX"
-        "+7 (XXX)-XXX-XX-XX"
-        "+7 XXX-XXX-XX-XX"
-    )
-    flags = 0
+def phon_valid(phone_namer: str):
+    regex = '^(\+?7|8)?[\D\s-]?[\(]?(?P<ph1>\d{3})[\)]?[\D\s-]?(?P<ph2>\d{3})[\D\s-]?(?P<ph3>\d{2})[\D\s-]?(?P<ph4>\d{2})$'
+    if phone_namer:
+        pre = re.search(regex, phone_namer)
+        if pre:
+            final_phone_number = f'+7 ({pre.group("ph1")}) {pre.group("ph2")}-{pre.group("ph3")}-{pre.group("ph4")}'
+            return final_phone_number
+        else:
+            return None
+    return None
