@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from django.db import models
 from location.models import City, Region
 
-from .validator import PhoneNumberValidator
 TYPE_USER = (
     ('shop', 'Магазин'),
     ('buyer', 'Покупатель'),
@@ -140,7 +139,7 @@ class Contact(models.Model):
     structure = models.CharField('Корпус', max_length=10, blank=True)
     building = models.CharField(_('building'), max_length=10, blank=True)
     apartment = models.CharField('Кв/Оф', max_length=10, blank=True)
-    phone_validator = PhoneNumberValidator()
+    phone_number = models.CharField(_('phone number'), max_length=20)
 
     class Meta:
         verbose_name = _('user contacts')
@@ -159,9 +158,9 @@ class Shop(models.Model):
 
     name = models.CharField(_('shop\'s name'), max_length=58)
     url = models.URLField('URL', null=True, blank=True)
-    user = models.ForeignKey(CustomUser, verbose_name=_('User'),
-                             related_name='shop', blank=True,
-                             null=True, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, verbose_name=_('User'),
+                                related_name='shop', blank=True,
+                                null=True, on_delete=models.CASCADE)
     order_accepting = models.BooleanField(
         _('order receving status'),
         default=True,
