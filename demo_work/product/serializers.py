@@ -35,7 +35,6 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ProductInfoSerializer(serializers.ModelSerializer):
     img = serializers.CharField(required=False)
-    # img = ImgSerializer(required=False)
     product = ProductSerializer(required=True)
     product_parameters = ProductParameterSerializer(read_only=True, many=True)
 
