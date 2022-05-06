@@ -54,9 +54,10 @@ class OrderItem(models.Model):
                                      blank=True,
                                      on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(_('quantity'))
-    cost_one = models.PositiveIntegerField(_('cost'),
-                                           help_text='cost for one position',
-                                           blank=True)
+    cost_one = models.FloatField(_('cost'),
+                                 help_text='cost for one position',
+                                 blank=True,
+                                 null=True)
 
     class Meta:
         verbose_name = _('Order item')
