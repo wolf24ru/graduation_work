@@ -45,7 +45,7 @@ class ProductInfo(models.Model):
                              related_name='product_info',
                              blank=True,
                              on_delete=models.CASCADE)
-    price = models.PositiveIntegerField(_('Price'),)
+    price = models.FloatField(_('Price'),)
     quantity = models.PositiveIntegerField(_('Quantity'))
 
     class Meta:
