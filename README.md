@@ -29,7 +29,7 @@ DEBUG=0
 
 # Запросы:
 ## Регистрация и авторизация пользователя:
-***
+___
 ### Регистрация нового пользователя
 **URL:** http//12.0.0.1:8000/api/v1/accounts/registration/  
 **METED:** POST   
@@ -90,30 +90,7 @@ DEBUG=0
 }
 ```
 ***
-### Вывод дейсвующих магазинов
-**URL:** http//12.0.0.1:8000/api/v1/accounts/shops/  
-**METED:** GET
-***
 
-### Полдучение статуса магазина
-#### Статус магазина - покуазывает может ли магазин принемать заказы илинет.
-#### Досутпно только для пользователей с `type = shop`
-**URL:** http//12.0.0.1:8000/api/v1/accounts/shop/order_accepting/  
-**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`  
-**METED:** GET
-
-### Изменение статуса магазина
-**URL:** http//12.0.0.1:8000/api/v1/accounts/shop/order_accepting/  
-**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
-**METED:** POST   
-**JSON EXAMPLE:**
-
-```json
-{
-"order_accepting":"true"
-}
-```
-***
 ### Получить всё контакты
 **URL:** http//12.0.0.1:8000/api/v1/accounts/contacts/  
 **HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
@@ -169,12 +146,8 @@ DEBUG=0
 }
 ```
 ***
-
-### Получить все категории товаров
-**URL:** http//12.0.0.1:8000/api/v1/category/category/  
-**METED:** GET
-***
-
+## Города и Регионы:
+___
 ### Получить список городов и регионов
 **URL:** http//12.0.0.1:8000/api/v1/location/location_inform  
 **METED:** GET  
@@ -186,6 +159,40 @@ DEBUG=0
 }
 ```
 ***
+## Информация о магазинах:
+___
+### Вывод дейсвующих магазинов
+**URL:** http//12.0.0.1:8000/api/v1/accounts/shops/  
+**METED:** GET
+***
+
+### Получение статуса магазина
+#### Статус магазина - покуазывает может ли магазин принемать заказы илинет.
+#### Досутпно только для пользователей с `type = shop`
+**URL:** http//12.0.0.1:8000/api/v1/accounts/shop/order_accepting/  
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`  
+**METED:** GET
+
+### Изменение статуса магазина
+**URL:** http//12.0.0.1:8000/api/v1/accounts/shop/order_accepting/  
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** POST   
+**JSON EXAMPLE:**
+
+```json
+{
+"order_accepting":"true"
+}
+```
+***
+## Работа с товарами:
+___
+### Получить все категории товаров
+**URL:** http//12.0.0.1:8000/api/v1/category/category/  
+**METED:** GET
+***
+
+
 ### Добваить до 3х продуктиов вручную
 **URL:** http//12.0.0.1:8000/api/v1/product/add_products/  
 **HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
@@ -249,6 +256,8 @@ DEBUG=0
 }
 ```
 ***
+## Работа с заказами:
+___
 ### Получить информацию о товарах в корзине
 **URL:** http//12.0.0.1:8000/api/v1/order/basket/
 **HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
@@ -329,7 +338,6 @@ DEBUG=0
     "contact": 4
     }
 ```
-
 id - id_basket  
 contact - id_contact
 
