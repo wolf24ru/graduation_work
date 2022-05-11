@@ -172,7 +172,6 @@ class ContactView(APIView):
         """Редактирование контакта
         {
         "id":
-
         }
         """
         if 'id' in request.data:
