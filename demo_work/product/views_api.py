@@ -119,19 +119,9 @@ class AddProducts(APIView):
         return JsonResponse({'ok': 'ok'})
 
 
-# def value_return(data, key: str):
-#     try:
-#         value = data[key]
-#     except KeyError as e:
-#         return JsonResponse({'Error': f'not parameter {e}'}, status=400)
-#     else:
-#         return value
-
-
 class UpdateCatalog(APIView):
 
     """обновление католога
-
     """
     permission_classes = [IsAuthenticated]
     # TODO Уменьшить количество обращений к БД
@@ -180,7 +170,7 @@ class UpdateCatalog(APIView):
 
 class ProductInfoView(APIView):
     """
-    quert_params:{
+    query_params:{
         'shop_id': id,
         'category_id': id
         }

@@ -170,3 +170,167 @@ DEBUG=0
 ```
 ***
 
+### Получить все категории товаров
+**URL:** http//12.0.0.1:8000/api/v1/category/category/  
+**METED:** GET
+***
+
+### Получить список городов и регионов
+**URL:** http//12.0.0.1:8000/api/v1/location/location_inform  
+**METED:** GET  
+**JSON EXAMPLE:**
+```json
+{
+  "search_for": "city",
+  "search": "Железногорск"
+}
+```
+***
+### Добваить до 3х продуктиов вручную
+**URL:** http//12.0.0.1:8000/api/v1/product/add_products/  
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** POST   
+**JSON EXAMPLE:**
+
+```json
+{
+    "shop": 5,
+    "products": [
+        {
+            "product": {
+                "name": "Парат",
+                "category": "Тумбочка"
+            },
+            "product_parameters":[
+                {
+                    "parameter":"Размер (ШхВхГ)",
+                    "value": "60х50х50 см"
+                },
+                {
+                   "parameter":"Цвет",
+                    "value": "фиолетовый" 
+                },
+                {
+                   "parameter":"Материал",
+                    "value": "СДП" 
+                }
+                 ],
+            "price": 7000,
+            "quantity": 26,
+            "img": "https://pm.ru/global_images/goods/31f/e37/c4c/4b6/1282586_preview.jpg",
+            "external_id": 264515
+        }
+        ]
+}
+```
+### Полное обнавлене каталога
+**URL:** http//12.0.0.1:8000/api/v1/product/update_catalog/  
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** POST   
+**JSON EXAMPLE:**
+
+```json
+{
+   "url":"https://raw.githubusercontent.com/wolf24ru/graduation_work/main/yaml_files/shope1.yaml"
+}
+```
+### Получить список информации о продуктах
+**URL:** http//12.0.0.1:8000/api/v1/product/product_inform/  
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** GET  
+не  обязательный **JSON EXAMPLE:**
+
+```json
+  {
+  "query_params": {
+    "shop_id": 2,
+    "category_id": 1
+  }
+}
+```
+***
+### Получить информацию о товарах в корзине
+**URL:** http//12.0.0.1:8000/api/v1/order/basket/
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** GET  
+**JSON EXAMPLE:**
+
+### Создать новую карзину 
+**URL:** http//12.0.0.1:8000/api/v1/order/basket/
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** POST  
+**JSON EXAMPLE:**
+
+```json
+{
+  "items":
+  [
+    {
+    "order": "",
+    "product_info": 3,
+    "quantity": 3,
+    },
+    {
+    "order": "",
+    "product_info": 5,
+    "quantity": 10
+    }
+  ] 
+}
+```
+
+### Удаление продуктов из корзины
+**URL:** http//12.0.0.1:8000/api/v1/order/basket/
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** DELETE  
+**JSON EXAMPLE:**
+
+```json
+{
+  "items": "1, 2"
+}
+```
+###  Добавить продукты в карзину 
+**URL:** http//12.0.0.1:8000/api/v1/order/basket/
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** PUT  
+**JSON EXAMPLE:**
+
+```json
+{
+  "items":
+  [
+    {
+      "id": 10,
+      "quantity": 10
+    }
+  ] 
+}
+```
+***
+###  Выдача списка заказов (для магазина) 
+**URL:** http//12.0.0.1:8000/api/v1/order/vendor/   
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** GET
+***
+###  Получить список сделанных заказов (для пользователя)
+**URL:** http//12.0.0.1:8000/api/v1/order/get/  
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** GET
+
+### Создать заказ(переместить из корзины на исполнение)
+**URL:** http//12.0.0.1:8000/api/v1/order/get/  
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**METED:** PUT  
+**JSON EXAMPLE:**
+```json
+{
+    "id": 4,
+    "contact": 4
+    }
+```
+
+id - id_basket  
+contact - id_contact
+
+

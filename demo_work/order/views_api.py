@@ -138,12 +138,12 @@ class BasketView(APIView):
                 
 class VendorOrdersView(APIView):
     permission_classes = [IsAuthenticated]
-
+    # TODO проверить работоспасобность
     """Работа с заказами магазином"""
     def get(self, request, *args, **kwargs):
         if request.user.type != 'shop':
             return JsonResponse({'Error': 'Only for users with status "shop" '}, status=403)
-        orders = not Order.objects.filter(order_items__product_info__shop__user=request.user). \
+        orders = Order.objects.filter(order_items__product_info__shop__user=request.user). \
             exclude(status='basket'). \
             prefetch_relates('order_items__product_info__product__category',
                              'order_items__product_info__product_parameters__parameter').\
@@ -171,6 +171,7 @@ class OrderView(APIView):
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        # TODO убрать id. Брать id_basket от пользователя
         """Создать заказ(переместить из корзины на исполнение)
         {id: id_order,
         contact: id_contact}
