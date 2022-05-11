@@ -1,7 +1,7 @@
 
 # from rest_framework.routers import DefaultRouter
 from accounts.views_api import UserFilling, RegistrationUser, ShopView,\
-    VendorStatus, ContactView
+    VendorStatus, ContactView, NewToken
 #
 # router = DefaultRouter()
 # router.register('user_info', UserInfo, 'user_info')
@@ -18,4 +18,5 @@ urlpatterns = [
     path('shops/', ShopView.as_view(), name='shops'),
     path('shop/order_accepting', VendorStatus.as_view(), name='order_accepting'),
     path('contacts/', ContactView.as_view(), name='contacts'),
+    path('new_token/', NewToken.as_view(), name='new_token'),
 ]

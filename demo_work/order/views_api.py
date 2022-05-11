@@ -207,7 +207,7 @@ class OrderView(APIView):
                 else:
                     if order_update:
                         update_cost = OrderItem.objects.bulk_update(order_items_list, ['cost_one'])
-                        new_order.send(sender=self.__class__, user_id=request.data['id'])
+                        new_order.send(sender=self.__class__, user_id=request.user.id)
                         return JsonResponse({'Msg': 'create new orders'})
                     else:
                         return JsonResponse({'Msg': 'basket is empty'})

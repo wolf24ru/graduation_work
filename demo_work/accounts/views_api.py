@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from accounts.serializers import UserSerializer, ShopSerializer, ContactSerializer, GetContactSerializer
 from rest_framework.authtoken.models import Token
 
+
 from django.http import JsonResponse
 
 
@@ -215,22 +216,17 @@ class ContactView(APIView):
         return JsonResponse({'Error': 'unexpected argument'}, status=401)
 
 
+class NewToken(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
 
-# class UserInfo(APIView):
-#     permission_classes = [IsAuthenticated]
-#
-#     def get(self, request, *args, **kwargs):
-#         user = CustomUser.objects.get(id=request.user.id)
-#         content = {
-#             'user': str(request.user.id),  # `django.contrib.auth.User` instance.
-#             'auth': str(request.auth),  # None
-#             'qeryset_user': {
-#                 'email': user.email,
-#                 'username': user.username,
-#                 'company': user.company,
-#                 'position': user.position,
-#                 'is_admin': user.is_admin,
-#                 'type': user.type
-#             },
-#         }
-#         return JsonResponse(content)
+    def post(self, request, *args, **kwargs):
+        tk = Token.objects.filter(user_id=request.user.id).distinct()
+        token = tk[0].generate_key()
+        tk.update(key=token)
+
+        content = {
+            'user': str(request.user),  # `django.contrib.auth.User` instance.
+            'new_token': token
+        }
+        return JsonResponse(content)

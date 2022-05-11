@@ -6,8 +6,9 @@ from accounts.models import CustomUser
 
 new_order = Signal()
 
+
 @receiver(new_order)
-def new_order_singal(user_id, **kwargs):
+def new_order_signal(user_id, **kwargs):
     """Отправка письма при изменении статуса заказа"""
     user = CustomUser.objects.get(id=user_id)
     msg = EmailMultiAlternatives(f'Update order\'s status',
