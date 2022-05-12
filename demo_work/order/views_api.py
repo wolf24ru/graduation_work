@@ -138,14 +138,13 @@ class BasketView(APIView):
                 
 class VendorOrdersView(APIView):
     permission_classes = [IsAuthenticated]
-    # TODO проверить работоспасобность
     """Работа с заказами магазином"""
     def get(self, request, *args, **kwargs):
         if request.user.type != 'shop':
             return JsonResponse({'Error': 'Only for users with status "shop" '}, status=403)
         orders = Order.objects.filter(order_items__product_info__shop__user=request.user). \
             exclude(status='basket'). \
-            prefetch_relates('order_items__product_info__product__category',
+            prefetch_related('order_items__product_info__product__category',
                              'order_items__product_info__product_parameters__parameter').\
             select_related('contact').\
             annotate(total_sum=(Sum(F('order_items__quantity') * F('order_items__cost_one')))).\
@@ -171,23 +170,21 @@ class OrderView(APIView):
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        # TODO убрать id. Брать id_basket от пользователя
         """Создать заказ(переместить из корзины на исполнение)
-        {id: id_order,
+        {
         contact: id_contact}
         """
         order_items_list = []
-        if {'id', 'contact'}.issubset(request.data):
-            id_digit = bool
-            if not type(request.data['id']) == int:
-                id_digit = request.data['id'].isdigit()
+        quantity_error_list = []
+        contact = request.data.get('contact')
+        if contact:
+            if not type(contact) == int:
+                id_digit = contact.isdigit()
             else:
                 id_digit = True
-
             if id_digit:
                 try:
                     order = Order.objects.filter(user_id=request.user.id,
-                                                 id=request.data['id'],
                                                  status='basket').distinct()
                     if order:
                         order_items = OrderItem.objects.filter(order=order[0]). \
@@ -195,8 +192,8 @@ class OrderView(APIView):
 
                         for item in order_items:
                             if item.product_info.quantity < item.quantity:
-                                return JsonResponse({'Error': f'in product (id: {item.id}) exceeded quantity'},
-                                                    status=401)
+                                quantity_error_list.append(item.id)
+                                continue
                             ProductInfo.objects.filter(id=item.product_info.id). \
                                 update(quantity=F('quantity') - item.quantity)
                             item.cost_one = item.product_info.price
@@ -209,6 +206,12 @@ class OrderView(APIView):
                     if order_update:
                         update_cost = OrderItem.objects.bulk_update(order_items_list, ['cost_one'])
                         new_order.send(sender=self.__class__, user_id=request.user.id)
+                        if quantity_error_list:
+                            return JsonResponse(
+                                {
+                                    'Msg': 'create new orders',
+                                    'Warning': f'in products (id: {quantity_error_list}) exceeded quantity'
+                                })
                         return JsonResponse({'Msg': 'create new orders'})
                     else:
                         return JsonResponse({'Msg': 'basket is empty'})

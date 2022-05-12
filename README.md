@@ -28,6 +28,7 @@ DEBUG=0
 ```
 
 # Запросы:
+Для упрощенной проверки можно импортировать файл `Shop.postman_collection.json` в [Postman](https://www.postman.com/)
 ## Регистрация и авторизация пользователя:
 ___
 ### Регистрация нового пользователя
@@ -334,11 +335,9 @@ ___
 **JSON EXAMPLE:**
 ```json
 {
-    "id": 4,
-    "contact": 4
-    }
+  "contact": 4
+}
 ```
-id - id_basket  
 contact - id_contact
 
 
