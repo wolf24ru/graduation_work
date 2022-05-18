@@ -2,12 +2,16 @@
 import django
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.db.models import Q, ObjectDoesNotExist
 from django.http import JsonResponse
+
 from requests import get
+
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
+
 from yaml import load as load_yaml, Loader
 
 from accounts.models import Shop
@@ -167,19 +171,50 @@ class UpdateCatalog(APIView):
                 return JsonResponse({'Msg': 'all create'}, status=201)
         return JsonResponse({'Errors': 'Url error. Not specified basic arguments'})
 
+#
+# class ProductInfoView(APIView):
+#     """
+#     query_params:{
+#         'shop_id': id,
+#         'category_id': id
+#         }
+#     """
+#     queryset = ProductInfo.objects.none()
+#     permission_classes = [AllowAny]
+#
+#     def get(self, request, *args, **kwargs):
+#
+#         query = Q(shop__order_accepting=True)
+#         shop_id = request.query_params.get('shop_id')
+#         category_id = request.query_params.get('category_id')
+#
+#         if shop_id:
+#             query = query & Q(shop_id=shop_id)
+#
+#         if category_id:
+#             query = query & Q(product__category_id=category_id)
+#
+#         queryset = ProductInfo.objects.filter(query).\
+#             select_related('product__category', 'shop').\
+#             prefetch_related('product_parameters__parameter', 'img').\
+#             distinct()
+#
+#         serializer = ProductInfoINSerializer(queryset, many=True)
+#         return Response(serializer.data)
 
-class ProductInfoView(APIView):
+
+class ProductInfoViewSet(ViewSet):
     """
     query_params:{
         'shop_id': id,
         'category_id': id
         }
     """
+
     queryset = ProductInfo.objects.none()
     permission_classes = [AllowAny]
 
-    def get(self, request, *args, **kwargs):
-
+    def list(self, request, *args, **kwargs):
         query = Q(shop__order_accepting=True)
         shop_id = request.query_params.get('shop_id')
         category_id = request.query_params.get('category_id')
@@ -196,6 +231,14 @@ class ProductInfoView(APIView):
             distinct()
 
         serializer = ProductInfoINSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        try:
+            product = ProductInfo.objects.get(id=pk)
+        except ObjectDoesNotExist as e:
+            return JsonResponse({'Error': f'product with id {pk} - {e}'})
+        serializer = ProductInfoINSerializer(product)
         return Response(serializer.data)
 
 

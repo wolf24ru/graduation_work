@@ -2,17 +2,18 @@ from distutils.util import strtobool
 
 from django.db.models import Q
 from location.models import RegionCity
-from accounts.models import Shop, CustomUser, Contact
-from accounts.validator import phon_valid
 from django.contrib.auth.password_validation import validate_password
+
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
-
-from accounts.serializers import UserSerializer, ShopSerializer, ContactSerializer, GetContactSerializer
 from rest_framework.authtoken.models import Token
+
+from accounts.models import Shop, CustomUser, Contact
+from accounts.validator import phon_valid
+from accounts.serializers import UserSerializer, ShopSerializer, ContactSerializer, GetContactSerializer
 
 
 from django.http import JsonResponse

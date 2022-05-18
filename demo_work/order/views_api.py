@@ -6,28 +6,31 @@ from django.db.models import Sum, F, Q
 from django.db import IntegrityError
 
 from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from order.models import Order, OrderItem
 from order.serializers import OrderSerializer, OrderItemSerializer, OrderItemAddQuantitySerializer
 
-from order.signals import new_order
+from order.tasks import new_order_email_task
 
 from product.models import ProductInfo
 
 
-class BasketView(APIView):
+class BasketViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
+    queryset = Order.objects.all()
     """Получение корзины"""
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         try:
-            basket = Order.objects.filter(user_id=request.user.id, status='basket').\
+            basket = self.queryset.filter(user_id=request.user.id, status='basket').\
                 prefetch_related('order_items__product_info__product__category',
                                  'order_items__product_info__product_parameters__parameter'). \
                 annotate(
                 total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))).\
                 distinct()
+            p = self.queryset.filter
             serializer = OrderSerializer(basket, many=True)
             return Response(serializer.data)
         except FieldError:
@@ -42,10 +45,10 @@ class BasketView(APIView):
     'cost_one': 'cost_for_one'
     ]}    
     """
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         items = request.data.get('items')
         if items:
-            basket = Order.objects.get_or_create(user_id=request.user.id,
+            basket = self.queryset.get_or_create(user_id=request.user.id,
                                                  status='basket')
 
             for item in items:
@@ -67,18 +70,21 @@ class BasketView(APIView):
     """Удаление товаров из корзины
     items: [id_items]
     """
-    def delete(self, request, *args, **kwargs):
-        items = request.data.get('items')
-        if items:
-            items_id_list = items.split(',')
+    def destroy(self, request, *args, **kwargs):
+        items_id_list = request.data.get('items')
+        if items_id_list:
             query = Q()
             try:
-                basket = Order.objects.get(user_id=request.user.id, status='basket')
+                basket = self.queryset.objects.get(user_id=request.user.id, status='basket')
             except ObjectDoesNotExist:
                 return JsonResponse({'Msg': 'Basket is empty. Basket do not create yet'})
             else:
                 for id_item in items_id_list:
-                    if id_item.isdigit():
+                    if not type(id_item) == int:
+                        id_digit = id_item.isdigit()
+                    else:
+                        id_digit = True
+                    if id_digit:
                         query = query | Q(order=basket, id=id_item)
                 if query:
                     delete_count = OrderItem.objects.filter(query).delete()[0]
@@ -86,7 +92,7 @@ class BasketView(APIView):
             return JsonResponse({'Error': 'incorrect arguments'})
 
     """Добавить количество товаров в корзину"""
-    def put(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         json_valid_error = {'Error': {
             'msg': 'Valid Error in items',
             'items': []
@@ -106,8 +112,8 @@ class BasketView(APIView):
             # except ValueError:
             #     JsonResponse({'Errors': 'Неверный формат запроса'})
             # else:
-            basket = Order.objects.get_or_create(user_id=request.user.id,
-                                                 status='basket')
+            basket = self.queryset.objects.get_or_create(user_id=request.user.id,
+                                                         status='basket')
             order_items_queryset = OrderItem.objects.filter(order=basket[0]).all()
             for _order_item in order_items_queryset:
                 for order_item in items_list:
@@ -172,7 +178,8 @@ class OrderView(APIView):
     def post(self, request, *args, **kwargs):
         """Создать заказ(переместить из корзины на исполнение)
         {
-        contact: id_contact}
+        contact: id_contact
+        }
         """
         order_items_list = []
         quantity_error_list = []
@@ -205,7 +212,8 @@ class OrderView(APIView):
                 else:
                     if order_update:
                         update_cost = OrderItem.objects.bulk_update(order_items_list, ['cost_one'])
-                        new_order.send(sender=self.__class__, user_id=request.user.id)
+                        new_order_email_task.delay(user_id=request.user.id)
+                        # new_order.send(sender=self.__class__, user_id=request.user.id)
                         if quantity_error_list:
                             return JsonResponse(
                                 {

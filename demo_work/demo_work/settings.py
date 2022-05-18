@@ -151,5 +151,17 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+    ],
+    'TEST_REQUEST_RENDERER_CLASSES': [
+        'rest_framework.renderers.MultiPartRenderer',
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.TemplateHTMLRenderer'
     ]
 }
+
+broker_url = os.getenv('BROKER_URL')
+result_backend = os.getenv('CELERY_RESULT_BACKEND')
+accept_content = os.getenv('CELERY_ACCEPT_CONTENT')
+task_serializer = os.getenv('CELERY_TASK_SERIALIZER')
+result_serializer = os.getenv('CELERY_RESULT_SERIALIZER')
+timezone = os.getenv('CELERY_TIMEZONE')

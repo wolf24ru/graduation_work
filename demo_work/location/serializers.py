@@ -15,3 +15,12 @@ class RegionSerializer(serializers.ModelSerializer):
         model = Region
         fields = ('id', 'region')
         read_only_fields = ('id', 'region')
+
+class RegionCitySerializer(serializers.ModelSerializer):
+    region = RegionSerializer()
+    city = CitySerializer()
+
+    class Meta:
+        model = RegionCity
+        fields = ('id', 'region', 'city')
+        read_only_fields = ('id', 'region', 'city')
