@@ -72,8 +72,7 @@ class OrderCost(models.Model):
                               verbose_name=_('Order'),
                               related_name='order_cost',
                               blank=True,
-                              on_delete=models.CASCADE,
-                              unique=True
+                              on_delete=models.CASCADE
                               )
     delivery_cost = models.PositiveIntegerField(_('Delivery cost'))
     items_cost = models.PositiveIntegerField(_('Items cost'))
