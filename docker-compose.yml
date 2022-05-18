@@ -6,10 +6,20 @@ services:
     restart: always
     env_file:
       - .env
-#    ports:
-#      - 5430:5432
+    ports:
+      - 5430:5432
     volumes:
       - ./db-data/:/var/lib/postgresql/data/
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6380:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes:
+      - ./cache:/data
+
+
 
   django:
     build: ./demo_work
