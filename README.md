@@ -19,6 +19,13 @@ EMAIL_USE_TLS=True
 
 SECRET_KEY=django-insecure-p@ku57h=!suz$&&%k^ykn%itg#qhhfeqvgg)jg_ix7&+(hn!_9
 DEBUG=0
+
+BROKER_URL=redis://cache:6379
+CELERY_RESULT_BACKEND=redis://cache:6379
+CELERY_ACCEPT_CONTENT=['application/json']
+CELERY_TASK_SERIALIZER=json
+CELERY_RESULT_SERIALIZER=json
+CELERY_TIMEZONE=Asia/Krasnoyarsk
 ```
 
 ### Запуск Doker
@@ -260,13 +267,13 @@ ___
 ## Работа с заказами:
 ___
 ### Получить информацию о товарах в корзине
-**URL:** http//12.0.0.1:8000/api/v1/order/basket/
-**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
+**URL:** http//12.0.0.1:8000/api/v1/order/basket/  
+**HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`  
 **METED:** GET  
 **JSON EXAMPLE:**
 
 ### Создать новую карзину 
-**URL:** http//12.0.0.1:8000/api/v1/order/basket/
+**URL:** http//12.0.0.1:8000/api/v1/order/basket/  
 **HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
 **METED:** POST  
 **JSON EXAMPLE:**
@@ -290,7 +297,7 @@ ___
 ```
 
 ### Удаление продуктов из корзины
-**URL:** http//12.0.0.1:8000/api/v1/order/basket/
+**URL:** http//12.0.0.1:8000/api/v1/order/basket/  
 **HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
 **METED:** DELETE  
 **JSON EXAMPLE:**
@@ -301,7 +308,7 @@ ___
 }
 ```
 ###  Добавить продукты в карзину 
-**URL:** http//12.0.0.1:8000/api/v1/order/basket/
+**URL:** http//12.0.0.1:8000/api/v1/order/basket/  
 **HEADERS:** `Authorization Token b6c64b1e71a7770b94c49c9baf8f3e0b45872d5e`   
 **METED:** PUT  
 **JSON EXAMPLE:**
