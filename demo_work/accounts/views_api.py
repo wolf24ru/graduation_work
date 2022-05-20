@@ -37,7 +37,7 @@ class RegistrationUser(APIView):
                     error_array = []
                     for item in password_error:
                         error_array.append(item)
-                    return JsonResponse({'Error': {'password': error_array}})
+                    return JsonResponse({'Error': {'password': error_array}}, status=400)
                 else:
                     user_serializer = UserSerializer(data=request.data)
                     if user_serializer.is_valid():
@@ -47,11 +47,11 @@ class RegistrationUser(APIView):
                         return JsonResponse({'Inform': 'User successful create'},
                                             status=201)
                     else:
-                        return JsonResponse({'Error': user_serializer.errors})
+                        return JsonResponse({'Error': user_serializer.errors}, status=400)
             else:
-                return JsonResponse({'Error': 'entered  do not full list of argument'})
+                return JsonResponse({'Error': 'entered  do not full list of argument'}, status=400)
         else:
-            return JsonResponse({'Error': 'unexpected argument'})
+            return JsonResponse({'Error': 'unexpected argument'}, status=400)
 
 
 class UserFilling(APIView):
@@ -103,14 +103,16 @@ class VendorStatus(APIView):
         if request.user.type != 'shop':
             return JsonResponse({'Error': 'Only for users with status "shop" '}, status=403)
         order_accepting = request.data.get('order_accepting')
-        if order_accepting:
+        if order_accepting is not None:
             try:
+                if type(order_accepting) is str:
+                    order_accepting = strtobool(order_accepting)
                 Shop.objects.filter(user_id=request.user.id).\
-                    update(order_accepting=strtobool(order_accepting))
+                    update(order_accepting=order_accepting)
                 return JsonResponse({'Msg': f'order accepting changed to {order_accepting}'})
             except ValueError as e:
                 return JsonResponse({'Error': str(e)})
-        return JsonResponse({'Error': 'unexpected argument'}, status=401)
+        return JsonResponse({'Error': 'unexpected argument'}, status=400)
 
 
 class ContactView(APIView):
