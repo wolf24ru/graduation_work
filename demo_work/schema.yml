@@ -1,0 +1,474 @@
+openapi: 3.0.3
+info:
+  title: furniture store
+  version: 1.0.0
+  description: implementation of the received promises
+paths:
+  /api-token-auth/:
+    post:
+      operationId: api_token_auth_create
+      tags:
+      - api-token-auth
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+  /api/v1/accounts/contacts/:
+    get:
+      operationId: api_v1_accounts_contacts_retrieve
+      description: Получить контакты пользователя
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_accounts_contacts_create
+      description: Добавление контакта
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_v1_accounts_contacts_update
+      description: |-
+        Редактирование контакта
+        {
+        "id":
+        }
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_v1_accounts_contacts_destroy
+      description: |-
+        Удаление контакта
+        {"contacts_id":[ids]}
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/accounts/new_token/:
+    post:
+      operationId: api_v1_accounts_new_token_create
+      description: Создание нового токена
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/accounts/registration/:
+    post:
+      operationId: api_v1_accounts_registration_create
+      description: Регистрация пользователя
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/accounts/shop/order_accepting:
+    get:
+      operationId: api_v1_accounts_shop_order_accepting_retrieve
+      description: Получить текущий статус поставщика
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_accounts_shop_order_accepting_create
+      description: Изменить статус магазина
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/accounts/shops/:
+    get:
+      operationId: api_v1_accounts_shops_list
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Shop'
+          description: ''
+  /api/v1/accounts/user_filling/:
+    get:
+      operationId: api_v1_accounts_user_filling_retrieve
+      description: |-
+        Информация о пользователи
+
+        GET: Получить информацию о пользователи
+        POST: изменить информацию о пользователи
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_accounts_user_filling_create
+      description: |-
+        Информация о пользователи
+
+        GET: Получить информацию о пользователи
+        POST: изменить информацию о пользователи
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/category/category/:
+    get:
+      operationId: api_v1_category_category_list
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/location/location_inform/:
+    get:
+      operationId: api_v1_location_location_inform_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/location/location_inform/{id}/:
+    get:
+      operationId: api_v1_location_location_inform_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this region city.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/order/basket/:
+    get:
+      operationId: api_v1_order_basket_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_order_basket_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          description: No response body
+  /api/v1/order/basket/{id}/:
+    put:
+      operationId: api_v1_order_basket_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Порядок.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_v1_order_basket_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Порядок.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/order/get/:
+    get:
+      operationId: api_v1_order_get_retrieve
+      description: Получить заказы
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_order_get_create
+      description: |-
+        Создать заказ(переместить из корзины на исполнение)
+        {
+        contact: id_contact
+        }
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/order/vendor/:
+    get:
+      operationId: api_v1_order_vendor_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/product/add_products/:
+    post:
+      operationId: api_v1_product_add_products_create
+      description: |-
+        Добавление продуктов до 3х
+
+        {data:
+            shop: id,
+            products:
+            [{
+
+            img: product_img,
+            product:
+                {
+                    name: product_name,
+                    category: product_category,
+                },
+            product_parameters:
+                {
+                    parameter: product_parameter,
+                    value: product_value
+                },
+            price: product_price,
+            quantity: product_quantity,
+            img: img_path
+            }]
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/product/product_inform/:
+    get:
+      operationId: api_v1_product_product_inform_retrieve
+      description: |-
+        query_params:{
+            'shop_id': id,
+            'category_id': id
+            }
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/product/product_inform/{id}/:
+    get:
+      operationId: api_v1_product_product_inform_retrieve_2
+      description: |-
+        query_params:{
+            'shop_id': id,
+            'category_id': id
+            }
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Info about product.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/product/update_catalog/:
+    post:
+      operationId: api_v1_product_update_catalog_create
+      description: обновление католога
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          title: Имя пользователя
+        password:
+          type: string
+          writeOnly: true
+          title: Пароль
+        token:
+          type: string
+          readOnly: true
+          title: Токен
+      required:
+      - password
+      - token
+      - username
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Category's name
+          maxLength: 58
+      required:
+      - id
+      - name
+    Shop:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Shop's name
+          maxLength: 58
+        order_accepting:
+          type: boolean
+          title: Order receving status
+          description: indicates the shop's ability to accept orders
+      required:
+      - id
+      - name
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"

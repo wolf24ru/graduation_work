@@ -3,6 +3,8 @@ from distutils.util import strtobool
 from django.db.models import Q
 from location.models import RegionCity
 from django.contrib.auth.password_validation import validate_password
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -13,17 +15,25 @@ from rest_framework.authtoken.models import Token
 
 from accounts.models import Shop, CustomUser, Contact
 from accounts.validator import phon_valid
-from accounts.serializers import UserSerializer, ShopSerializer, ContactSerializer, GetContactSerializer
-
+from accounts.serializers import UserSerializer, ShopSerializer, ContactSerializer,\
+    GetContactSerializer, UserSerializerSchem, ResponseRegistrSchem,\
+    ResponseUserFilling, RequestVendorStatus, ResponseVendorStatus,\
+    ResponseContact, ResponseContact, RequestContactDelete,\
+    ResponseContactDelete
 
 from django.http import JsonResponse
 
 
 class RegistrationUser(APIView):
     """Регистрация пользователя"""
-    queryset = CustomUser.objects.none()
+    queryset = CustomUser.objects.all()
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=UserSerializerSchem,
+        methods=["POST"],
+        responses={201: ResponseRegistrSchem},
+    )
     def post(self, request, *args, **kwargs):
         _argument_dict = {'first_name', 'last_name', 'email',
                           'password', 'company', 'position', 'username', 'type'}
@@ -44,7 +54,7 @@ class RegistrationUser(APIView):
                         user = user_serializer.save()
                         user.set_password(request.data['password'])
                         user.save()
-                        return JsonResponse({'Inform': 'User successful create'},
+                        return JsonResponse({'Msg': 'User successful create'},
                                             status=201)
                     else:
                         return JsonResponse({'Error': user_serializer.errors}, status=400)
@@ -55,21 +65,25 @@ class RegistrationUser(APIView):
 
 
 class UserFilling(APIView):
-    """Информация о пользователи
-
-    GET: Получить информацию о пользователи
-    POST: изменить информацию о пользователи
-    """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        responses={200: UserSerializer},
+    )
     def get(self, request, *args, **kwargs):
+        """Получить информацию о пользователи"""
         if not request.user.is_authenticated:
             return JsonResponse({'Error': 'Login required'}, status=403)
 
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=UserSerializerSchem,
+        responses={200: ResponseUserFilling},
+    )
     def post(self, request, *args, **kwargs):
+        """Изменить информацию о пользователи"""
         if not request.user.is_authenticated:
             return JsonResponse({'Error': 'Login required'}, status=403)
 
@@ -90,6 +104,9 @@ class ShopView(ListAPIView):
 class VendorStatus(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        responses={200: ShopSerializer},
+    )
     def get(self, request, *args, **kwargs):
         """Получить текущий статус поставщика"""
         if request.user.type != 'shop':
@@ -98,6 +115,10 @@ class VendorStatus(APIView):
         serializer = ShopSerializer(vendor)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=RequestVendorStatus,
+        responses={200: ResponseVendorStatus},
+    )
     def post(self, request, *args, **kwargs):
         """Изменить статус магазина"""
         if request.user.type != 'shop':
@@ -109,21 +130,31 @@ class VendorStatus(APIView):
                     order_accepting = strtobool(order_accepting)
                 Shop.objects.filter(user_id=request.user.id).\
                     update(order_accepting=order_accepting)
-                return JsonResponse({'Msg': f'order accepting changed to {order_accepting}'})
+                return JsonResponse({'Msg': f'Order accepting changed to {order_accepting}'})
             except ValueError as e:
                 return JsonResponse({'Error': str(e)})
         return JsonResponse({'Error': 'unexpected argument'}, status=400)
 
 
 class ContactView(APIView):
+    """
+    Класс для работы с контактами
+    """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        responses={200: GetContactSerializer},
+    )
     def get(self, request, *args, **kwargs):
         """Получить контакты пользователя"""
         contact = Contact.objects.filter(user_id=request.user.id)
         serializer = GetContactSerializer(contact, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=ContactSerializer,
+        responses={201: ResponseContact},
+    )
     def post(self, request, *args, **kwargs):
         """Добавление контакта"""
         if {'region', 'city', 'street', 'phone_number'}.issubset(request.data):
@@ -154,9 +185,12 @@ class ContactView(APIView):
 
         return JsonResponse({'Error': 'unexpected argument'}, status=400)
 
+    @extend_schema(
+        request=RequestContactDelete,
+        responses={204: ResponseContactDelete},
+    )
     def delete(self, request, *args, **kwargs):
-        """Удаленее контакта
-        {"contacts_id":[ids]}
+        """Удаление контакта
         """
         contacts_id_list = request.data.get('contacts_id')
         if contacts_id_list:
@@ -178,7 +212,6 @@ class ContactView(APIView):
         }
         """
         if 'id' in request.data:
-            id_digit = bool
             if not type(request.data['id']) == int:
                 id_digit = request.data['id'].isdigit()
             else:
@@ -223,6 +256,7 @@ class NewToken(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        """Создание нового токена"""
         tk = Token.objects.filter(user_id=request.user.id).distinct()
         token = tk[0].generate_key()
         tk.update(key=token)

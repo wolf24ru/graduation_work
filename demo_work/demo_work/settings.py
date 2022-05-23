@@ -38,6 +38,9 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
+
     'category',
     'accounts',
     'product',
@@ -156,7 +159,8 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.MultiPartRenderer',
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.TemplateHTMLRenderer'
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 broker_url = os.getenv('BROKER_URL')
@@ -165,3 +169,14 @@ accept_content = os.getenv('CELERY_ACCEPT_CONTENT')
 task_serializer = os.getenv('CELERY_TASK_SERIALIZER')
 result_serializer = os.getenv('CELERY_RESULT_SERIALIZER')
 timezone = os.getenv('CELERY_TIMEZONE')
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'furniture store',
+    'DESCRIPTION': 'implementation of the received promises',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+}
