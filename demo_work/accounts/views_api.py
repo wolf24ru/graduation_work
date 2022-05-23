@@ -136,7 +136,7 @@ class ContactView(APIView):
                 phone_number = phon_valid(request.data['phone_number'])
                 if not phone_number:
                     return JsonResponse({'Msg': f'your phone number do not correct: {request.data["phone_number"]}.'
-                                                f' Try like +7 (999) 999-99-99'})
+                                                f' Try like +7 (999) 999-99-99'}, status=400)
                 request.data.update({'user': request.user.id})
                 request.data['region'] = region_city.region.id
                 request.data['city'] = region_city.city.id
@@ -146,13 +146,13 @@ class ContactView(APIView):
                     serializer.save()
                     return JsonResponse({'Msg': 'Contact create'}, status=201)
                 else:
-                    return JsonResponse({'Error': serializer.errors}, status=401)
+                    return JsonResponse({'Error': serializer.errors}, status=400)
             else:
                 return JsonResponse({'Error': 'City and region do not correlate.'
                                               'Try to watch your region or city in list'
-                                              'Use api/v1/location/location_inform'}, status=401)
+                                              'Use api/v1/location/location_inform'}, status=400)
 
-        return JsonResponse({'Error': 'unexpected argument'}, status=401)
+        return JsonResponse({'Error': 'unexpected argument'}, status=400)
 
     def delete(self, request, *args, **kwargs):
         """Удаленее контакта
@@ -169,7 +169,7 @@ class ContactView(APIView):
             if query:
                 deleted_count = Contact.objects.filter(query).delete()[0]
                 return JsonResponse({'Msg': f'Delete {deleted_count} contacts'})
-        return JsonResponse({'Error': 'unexpected argument'}, status=401)
+        return JsonResponse({'Error': 'unexpected argument'}, status=400)
 
     def put(self, request, *args, **kwargs):
         """Редактирование контакта
@@ -198,12 +198,12 @@ class ContactView(APIView):
                     else:
                         return JsonResponse({'Error': 'City and region do not correlate.'
                                                       'Try to watch your region or city in list'
-                                                      'Use api/v1/location/location_inform'}, status=401)
+                                                      'Use api/v1/location/location_inform'}, status=400)
                 if {'phone_number'}.issubset(request.data):
                     phone_number = phon_valid(request.data['phone_number'])
                     if not phone_number:
                         return JsonResponse({'Msg': f'your phone number do not correct: {request.data["phone_number"]}.'
-                                                    f' Try like +7 (999) 999-99-99'})
+                                                    f' Try like +7 (999) 999-99-99'}, status=400)
                     request.data['phone_number'] = phone_number
                 if contact:
                     serializer = ContactSerializer(contact,
@@ -215,7 +215,7 @@ class ContactView(APIView):
                     else:
                         return JsonResponse({'Error': serializer.errors})
 
-        return JsonResponse({'Error': 'unexpected argument'}, status=401)
+        return JsonResponse({'Error': 'unexpected argument'}, status=400)
 
 
 class NewToken(APIView):
@@ -227,8 +227,8 @@ class NewToken(APIView):
         token = tk[0].generate_key()
         tk.update(key=token)
 
-        content = {
+        data = {
             'user': str(request.user),  # `django.contrib.auth.User` instance.
             'new_token': token
         }
-        return JsonResponse(content)
+        return JsonResponse(data)
