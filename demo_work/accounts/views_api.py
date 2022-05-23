@@ -19,7 +19,8 @@ from accounts.serializers import UserSerializer, ShopSerializer, ContactSerializ
     GetContactSerializer, UserSerializerSchem, ResponseRegistrSchem,\
     ResponseUserFilling, RequestVendorStatus, ResponseVendorStatus,\
     ResponseContact, ResponseContact, RequestContactDelete,\
-    ResponseContactDelete
+    ResponseContactDelete, ContactPutSerializer, ResponseSerializer,\
+    RespoonseNewTokenSerializer
 
 from django.http import JsonResponse
 
@@ -32,7 +33,7 @@ class RegistrationUser(APIView):
     @extend_schema(
         request=UserSerializerSchem,
         methods=["POST"],
-        responses={201: ResponseRegistrSchem},
+        responses={201: ResponseSerializer},
     )
     def post(self, request, *args, **kwargs):
         _argument_dict = {'first_name', 'last_name', 'email',
@@ -117,7 +118,7 @@ class VendorStatus(APIView):
 
     @extend_schema(
         request=RequestVendorStatus,
-        responses={200: ResponseVendorStatus},
+        responses={200: ResponseSerializer},
     )
     def post(self, request, *args, **kwargs):
         """Изменить статус магазина"""
@@ -153,7 +154,7 @@ class ContactView(APIView):
 
     @extend_schema(
         request=ContactSerializer,
-        responses={201: ResponseContact},
+        responses={201: ResponseSerializer},
     )
     def post(self, request, *args, **kwargs):
         """Добавление контакта"""
@@ -187,7 +188,7 @@ class ContactView(APIView):
 
     @extend_schema(
         request=RequestContactDelete,
-        responses={204: ResponseContactDelete},
+        responses={204: ResponseSerializer},
     )
     def delete(self, request, *args, **kwargs):
         """Удаление контакта
@@ -205,11 +206,12 @@ class ContactView(APIView):
                 return JsonResponse({'Msg': f'Delete {deleted_count} contacts'})
         return JsonResponse({'Error': 'unexpected argument'}, status=400)
 
+    @extend_schema(
+        request=ContactPutSerializer,
+        responses={201: ResponseSerializer},
+    )
     def put(self, request, *args, **kwargs):
         """Редактирование контакта
-        {
-        "id":
-        }
         """
         if 'id' in request.data:
             if not type(request.data['id']) == int:
@@ -250,7 +252,9 @@ class ContactView(APIView):
 
         return JsonResponse({'Error': 'unexpected argument'}, status=400)
 
-
+@extend_schema(
+        responses={200: RespoonseNewTokenSerializer},
+    )
 class NewToken(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]

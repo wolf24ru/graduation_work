@@ -4,9 +4,8 @@ from accounts.models import CustomUser, Contact, Shop
 
 from location.serializers import CitySerializer, RegionSerializer
 
-
+# TODO найти и удалить лишнии сериализаторы
 class ContactSerializer(serializers.ModelSerializer):
-
 
     class Meta:
         model = Contact
@@ -100,3 +99,27 @@ class RequestVendorStatus(serializers.Serializer):
 
     class Meta:
         fields = ('order_accepting',)
+
+
+class ContactPutSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=True)
+
+    class Meta:
+        model = Contact
+        fields = ('id', 'region', 'city',
+                  'street', 'house', 'structure',
+                  'building', 'apartment', 'phone_number')
+
+
+class ResponseSerializer(serializers.Serializer):
+    Msg = serializers.StringRelatedField(default='Text response message')
+
+    class Meta:
+        fields = ('Msg',)
+
+class RespoonseNewTokenSerializer(serializers.Serializer):
+    user = serializers.StringRelatedField(default='user parameter')
+    new_token = serializers.StringRelatedField(default='Token')
+
+    class Meta:
+        fields = ('user', 'new_token',)
