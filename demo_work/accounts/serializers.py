@@ -4,7 +4,7 @@ from accounts.models import CustomUser, Contact, Shop
 
 from location.serializers import CitySerializer, RegionSerializer
 
-# TODO найти и удалить лишнии сериализаторы
+
 class ContactSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -52,32 +52,11 @@ class ShopSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
-class ResponseRegistrSchem(serializers.Serializer):
-    Msg = serializers.StringRelatedField(default='User successful create')
-
-    class Meta:
-        fields = ('Msg',)
-
-
 class ResponseUserFilling(serializers.Serializer):
     Status = serializers.BooleanField(default=True)
 
     class Meta:
         fields = ('Status',)
-
-
-class ResponseVendorStatus(serializers.Serializer):
-    Msg = serializers.StringRelatedField(default='Order accepting changed to True')
-
-    class Meta:
-        fields = ('Msg',)
-
-
-class ResponseContactDelete(serializers.Serializer):
-    Msg = serializers.StringRelatedField(default='Delete 5 contacts')
-
-    class Meta:
-        fields = ('Msg',)
 
 
 class ResponseContact(serializers.Serializer):
@@ -116,6 +95,13 @@ class ResponseSerializer(serializers.Serializer):
 
     class Meta:
         fields = ('Msg',)
+
+
+class ResponseErrorSerializer(serializers.Serializer):
+    Error = serializers.StringRelatedField(default='Error message')
+
+    class Meta:
+        fields = ('Error',)
 
 class RespoonseNewTokenSerializer(serializers.Serializer):
     user = serializers.StringRelatedField(default='user parameter')

@@ -10,7 +10,7 @@ class ParameterSerializer(serializers.ModelSerializer):
 
 
 class ProductParameterSerializer(serializers.ModelSerializer):
-    parameter = serializers.StringRelatedField()
+    parameter = serializers.CharField()
 
     class Meta:
         model = ProductParameter
@@ -25,7 +25,7 @@ class ImgSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = serializers.StringRelatedField()
+    category = serializers.CharField()
 
     class Meta:
         model = Product
@@ -36,7 +36,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductInfoSerializer(serializers.ModelSerializer):
     img = serializers.CharField(required=False)
     product = ProductSerializer(required=True)
-    product_parameters = ProductParameterSerializer(read_only=True, many=True)
+    product_parameters = ProductParameterSerializer(many=True)
 
     class Meta:
         model = ProductInfo
@@ -56,7 +56,19 @@ class ProductInfoINSerializer(serializers.ModelSerializer):
 
 
 
+class ProductAddSerializer(serializers.Serializer):
+    shop = serializers.CharField(default='shop_id')
+    products = ProductInfoSerializer(many=True)
 
 
+class ProductUpdateCatalogSerializer(serializers.Serializer):
+    url = serializers.URLField()
 
 
+class QueryParams(serializers.Serializer):
+    shop_id = serializers.CharField(default="1", required=False)
+    category_id = serializers.CharField(default="4", required=False)
+
+
+class ProductListSerializer(serializers.Serializer):
+    query_params = QueryParams()

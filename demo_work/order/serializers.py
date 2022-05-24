@@ -3,7 +3,7 @@ from rest_framework import serializers
 from product.serializers import ProductInfoINSerializer
 from accounts.serializers import ContactSerializer
 from order.models import Order, OrderItem
-
+from drf_compound_fields.fields import ListField
 
 class OrderItemSerializer(serializers.ModelSerializer):
     cost_one = serializers.FloatField(required=False)
@@ -35,3 +35,14 @@ class OrderSerializer(serializers.ModelSerializer):
 class OrderItemAddQuantitySerializer(OrderItemSerializer):
     id = serializers.IntegerField(read_only=True)
     quantity = serializers.IntegerField(required=True)
+
+
+class BasketPutSerializer(serializers.Serializer):
+    items = ListField(child=OrderItemAddQuantitySerializer())
+
+
+class BasketDeleteSerializer(serializers.Serializer):
+    items = ListField(child=serializers.CharField())
+
+class CreateOrderSerializer(serializers.Serializer):
+    contact = ListField(child=serializers.CharField(default='id_contact'))
