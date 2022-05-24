@@ -103,6 +103,7 @@ class ResponseErrorSerializer(serializers.Serializer):
     class Meta:
         fields = ('Error',)
 
+
 class RespoonseNewTokenSerializer(serializers.Serializer):
     user = serializers.StringRelatedField(default='user parameter')
     new_token = serializers.StringRelatedField(default='Token')
