@@ -16,11 +16,10 @@ from rest_framework.authtoken.models import Token
 from accounts.models import Shop, CustomUser, Contact
 from accounts.validator import phon_valid
 from accounts.serializers import UserSerializer, ShopSerializer, ContactSerializer,\
-    GetContactSerializer, UserSerializerSchem, ResponseRegistrSchem,\
-    ResponseUserFilling, RequestVendorStatus, ResponseVendorStatus,\
-    ResponseContact, ResponseContact, RequestContactDelete,\
-    ResponseContactDelete, ContactPutSerializer, ResponseSerializer,\
-    RespoonseNewTokenSerializer
+    GetContactSerializer, UserSerializerSchem, ResponseUserFilling,\
+    RequestVendorStatus, ResponseContact, RequestContactDelete,\
+    ContactPutSerializer, ResponseSerializer, RespoonseNewTokenSerializer,\
+    ResponseErrorSerializer
 
 from django.http import JsonResponse
 
@@ -33,7 +32,8 @@ class RegistrationUser(APIView):
     @extend_schema(
         request=UserSerializerSchem,
         methods=["POST"],
-        responses={201: ResponseSerializer},
+        responses={201: ResponseSerializer,
+                   400: ResponseErrorSerializer},
     )
     def post(self, request, *args, **kwargs):
         _argument_dict = {'first_name', 'last_name', 'email',
@@ -69,7 +69,8 @@ class UserFilling(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        responses={200: UserSerializer},
+        responses={200: UserSerializer,
+                   400: ResponseErrorSerializer},
     )
     def get(self, request, *args, **kwargs):
         """Получить информацию о пользователи"""
@@ -81,7 +82,8 @@ class UserFilling(APIView):
 
     @extend_schema(
         request=UserSerializerSchem,
-        responses={200: ResponseUserFilling},
+        responses={200: ResponseUserFilling,
+                   400: ResponseErrorSerializer},
     )
     def post(self, request, *args, **kwargs):
         """Изменить информацию о пользователи"""
@@ -106,7 +108,8 @@ class VendorStatus(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        responses={200: ShopSerializer},
+        responses={200: ShopSerializer,
+                   400: ResponseErrorSerializer},
     )
     def get(self, request, *args, **kwargs):
         """Получить текущий статус поставщика"""
@@ -118,7 +121,8 @@ class VendorStatus(APIView):
 
     @extend_schema(
         request=RequestVendorStatus,
-        responses={200: ResponseSerializer},
+        responses={200: ResponseSerializer,
+                   400: ResponseErrorSerializer},
     )
     def post(self, request, *args, **kwargs):
         """Изменить статус магазина"""
@@ -154,7 +158,8 @@ class ContactView(APIView):
 
     @extend_schema(
         request=ContactSerializer,
-        responses={201: ResponseSerializer},
+        responses={201: ResponseSerializer,
+                   400: ResponseErrorSerializer},
     )
     def post(self, request, *args, **kwargs):
         """Добавление контакта"""
@@ -185,10 +190,11 @@ class ContactView(APIView):
                                               'Use api/v1/location/location_inform'}, status=400)
 
         return JsonResponse({'Error': 'unexpected argument'}, status=400)
-
+    # TODO разобраться почему не отображается request
     @extend_schema(
         request=RequestContactDelete,
-        responses={204: ResponseSerializer},
+        responses={204: ResponseSerializer,
+                   400: ResponseErrorSerializer},
     )
     def delete(self, request, *args, **kwargs):
         """Удаление контакта
@@ -208,7 +214,8 @@ class ContactView(APIView):
 
     @extend_schema(
         request=ContactPutSerializer,
-        responses={201: ResponseSerializer},
+        responses={201: ResponseSerializer,
+                   400: ResponseErrorSerializer},
     )
     def put(self, request, *args, **kwargs):
         """Редактирование контакта
@@ -251,6 +258,7 @@ class ContactView(APIView):
                         return JsonResponse({'Error': serializer.errors})
 
         return JsonResponse({'Error': 'unexpected argument'}, status=400)
+
 
 @extend_schema(
         responses={200: RespoonseNewTokenSerializer},

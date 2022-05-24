@@ -173,7 +173,10 @@ timezone = os.getenv('CELERY_TIMEZONE')
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'furniture store',
-    'DESCRIPTION': 'implementation of the received promises',
+    'DESCRIPTION': 'Для работы с API Необходимо:\n'
+                   '1) Зарегистрировать пользователя;\n'
+                   '2) Получить Token;\n'
+                   '3) Авторизоваться используя Token.\n',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SWAGGER_UI_DIST': 'SIDECAR',

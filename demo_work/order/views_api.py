@@ -1,4 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist, FieldError
+from drf_spectacular.utils import extend_schema
 from ujson import loads
 
 from django.http import JsonResponse
@@ -11,7 +12,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from order.models import Order, OrderItem
-from order.serializers import OrderSerializer, OrderItemSerializer, OrderItemAddQuantitySerializer
+from accounts.serializers import ResponseSerializer, ResponseErrorSerializer
+from order.serializers import OrderSerializer, OrderItemSerializer, OrderItemAddQuantitySerializer,\
+    BasketDeleteSerializer, BasketPutSerializer, CreateOrderSerializer
 
 from order.tasks import new_order_email_task
 
@@ -21,31 +24,35 @@ from product.models import ProductInfo
 class BasketViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
-    """Получение корзины"""
+
+    @extend_schema(
+        responses={200: OrderSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def list(self, request, *args, **kwargs):
+        """Получение корзины"""
         try:
-            basket = self.queryset.filter(user_id=request.user.id, status='basket').\
+            basket = self.queryset.filter(user_id=request.user.id, status='basket'). \
                 prefetch_related('order_items__product_info__product__category',
                                  'order_items__product_info__product_parameters__parameter'). \
                 annotate(
-                total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))).\
+                total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))). \
                 distinct()
             p = self.queryset.filter
             serializer = OrderSerializer(basket, many=True)
             return Response(serializer.data)
         except FieldError:
             return JsonResponse({'Error': f'basket is empty.'})
-    """
-    Создание корзины:
-    
-    {[
-    'order': '',
-    'product_info': 'id_product_info',
-    'quantity': 'quantity',
-    'cost_one': 'cost_for_one'
-    ]}    
-    """
+
+    @extend_schema(
+        request=OrderItemSerializer,
+        responses={200: ResponseSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def create(self, request, *args, **kwargs):
+        """
+        Создание корзины:
+        """
         items = request.data.get('items')
         if items:
             basket = self.queryset.get_or_create(user_id=request.user.id,
@@ -67,10 +74,15 @@ class BasketViewSet(ViewSet):
             return JsonResponse({'Msg': 'items was added in basket'})
         return JsonResponse({'Error': 'incorrect arguments'})
 
-    """Удаление товаров из корзины
+    @extend_schema(
+        request=BasketDeleteSerializer,
+        responses={200: ResponseSerializer,
+                   400: ResponseErrorSerializer}
+    )
+    def destroy(self, request, *args, **kwargs):
+        """Удаление товаров из корзины
     items: [id_items]
     """
-    def destroy(self, request, *args, **kwargs):
         items_id_list = request.data.get('items')
         if items_id_list:
             query = Q()
@@ -91,13 +103,18 @@ class BasketViewSet(ViewSet):
                     return JsonResponse({'Msg': f'deleted {delete_count} items'})
             return JsonResponse({'Error': 'incorrect arguments'})
 
-    """Добавить количество товаров в корзину"""
+    @extend_schema(
+        request=BasketPutSerializer,
+        responses={200: ResponseSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def update(self, request, *args, **kwargs):
+        """Добавить количество товаров в корзину"""
         json_valid_error = {'Error': {
             'msg': 'Valid Error in items',
             'items': []
         }}
-        
+
         json_valid = {
             'Msg': {
                 'msg': 'objects update',
@@ -107,11 +124,6 @@ class BasketViewSet(ViewSet):
 
         items_list = request.data.get('items')
         if items_list:
-            # try:
-            #     items_dict = loads(items)
-            # except ValueError:
-            #     JsonResponse({'Errors': 'Неверный формат запроса'})
-            # else:
             basket = self.queryset.objects.get_or_create(user_id=request.user.id,
                                                          status='basket')
             order_items_queryset = OrderItem.objects.filter(order=basket[0]).all()
@@ -144,16 +156,21 @@ class BasketViewSet(ViewSet):
                 
 class VendorOrdersView(APIView):
     permission_classes = [IsAuthenticated]
-    """Работа с заказами магазином"""
+
+    @extend_schema(
+        responses={200: OrderSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def get(self, request, *args, **kwargs):
+        """Работа с заказами магазином"""
         if request.user.type != 'shop':
             return JsonResponse({'Error': 'Only for users with status "shop" '}, status=403)
         orders = Order.objects.filter(order_items__product_info__shop__user=request.user). \
             exclude(status='basket'). \
             prefetch_related('order_items__product_info__product__category',
-                             'order_items__product_info__product_parameters__parameter').\
-            select_related('contact').\
-            annotate(total_sum=(Sum(F('order_items__quantity') * F('order_items__cost_one')))).\
+                             'order_items__product_info__product_parameters__parameter'). \
+            select_related('contact'). \
+            annotate(total_sum=(Sum(F('order_items__quantity') * F('order_items__cost_one')))). \
             distinct()
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
@@ -163,6 +180,10 @@ class OrderView(APIView):
     permission_classes = [IsAuthenticated]
     """Получение и создания заказов"""
 
+    @extend_schema(
+        responses={200: OrderSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def get(self, request, *args, **kwargs):
         """Получить заказы"""
         order = Order.objects.filter(user_id=request.user.id).\
@@ -175,11 +196,13 @@ class OrderView(APIView):
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=CreateOrderSerializer,
+        responses={200: ResponseSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def post(self, request, *args, **kwargs):
         """Создать заказ(переместить из корзины на исполнение)
-        {
-        contact: id_contact
-        }
         """
         order_items_list = []
         quantity_error_list = []

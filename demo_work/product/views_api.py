@@ -4,8 +4,10 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Q, ObjectDoesNotExist
 from django.http import JsonResponse
+from drf_spectacular.utils import extend_schema
 
 from requests import get
+from rest_framework.decorators import action
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -17,40 +19,25 @@ from yaml import load as load_yaml, Loader
 from accounts.models import Shop
 from category.models import Category, CategoryShop
 from product.models import ProductInfo, Product, Parameter, ProductParameter, Img
-from product.serializers import ProductSerializer, ProductInfoSerializer, ProductInfoINSerializer
+
+from accounts.serializers import ResponseSerializer, ResponseErrorSerializer
+from product.serializers import ProductSerializer, ProductInfoSerializer, ProductInfoINSerializer,\
+    ProductAddSerializer, ProductUpdateCatalogSerializer, ProductListSerializer
+
 
 
 class AddProducts(APIView):
-    """Добавление продуктов до 3х
-
-    {data:
-        shop: id,
-        products:
-        [{
-
-        img: product_img,
-        product:
-            {
-                name: product_name,
-                category: product_category,
-            },
-        product_parameters:
-            {
-                parameter: product_parameter,
-                value: product_value
-            },
-        price: product_price,
-        quantity: product_quantity,
-        img: img_path
-        }]
-    """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        request=ProductAddSerializer,
+        responses={200: ResponseSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def post(self, request, *args, **kwargs):
-
+        """Добавление продуктов до 3х
+        """
         user = request.user
-        if not user.is_authenticated:
-            return JsonResponse({'Error': 'Login required'}, status=401)
 
         if user.type != 'shop':
             return JsonResponse({'Error': 'User\'s type "shop" only'}, status=401)
@@ -64,12 +51,12 @@ class AddProducts(APIView):
 
         if type(products) is list and len(products) < 4:
             response_dict = {'category': {
-                                'create': [],
-                                'no_crete': []},
-                             'products': {
-                                 'create': [],
-                                 'no_crete': []
-                             }}
+                'create': [],
+                'no_crete': []},
+                'products': {
+                    'create': [],
+                    'no_crete': []
+                }}
 
             for product in products:
                 product_serializer = ProductInfoSerializer(data=product)
@@ -125,13 +112,17 @@ class AddProducts(APIView):
 
 class UpdateCatalog(APIView):
 
-    """обновление католога
-    """
     permission_classes = [IsAuthenticated]
     # TODO Уменьшить количество обращений к БД
+
+    @extend_schema(
+        request=ProductUpdateCatalogSerializer,
+        responses={200: ResponseSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'Error': 'Login required'}, status=401)
+        """Обновление каталога
+    """
         if request.user.type != 'shop':
             return JsonResponse({'Error': 'User\'s type "shop" only'}, status=401)
         try:
@@ -171,50 +162,18 @@ class UpdateCatalog(APIView):
                 return JsonResponse({'Msg': 'all create'}, status=201)
         return JsonResponse({'Errors': 'Url error. Not specified basic arguments'})
 
-#
-# class ProductInfoView(APIView):
-#     """
-#     query_params:{
-#         'shop_id': id,
-#         'category_id': id
-#         }
-#     """
-#     queryset = ProductInfo.objects.none()
-#     permission_classes = [AllowAny]
-#
-#     def get(self, request, *args, **kwargs):
-#
-#         query = Q(shop__order_accepting=True)
-#         shop_id = request.query_params.get('shop_id')
-#         category_id = request.query_params.get('category_id')
-#
-#         if shop_id:
-#             query = query & Q(shop_id=shop_id)
-#
-#         if category_id:
-#             query = query & Q(product__category_id=category_id)
-#
-#         queryset = ProductInfo.objects.filter(query).\
-#             select_related('product__category', 'shop').\
-#             prefetch_related('product_parameters__parameter', 'img').\
-#             distinct()
-#
-#         serializer = ProductInfoINSerializer(queryset, many=True)
-#         return Response(serializer.data)
-
 
 class ProductInfoViewSet(ViewSet):
-    """
-    query_params:{
-        'shop_id': id,
-        'category_id': id
-        }
-    """
-
-    queryset = ProductInfo.objects.none()
+    queryset = ProductInfo.objects.all()
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=ProductListSerializer,
+        responses={200: ProductInfoINSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def list(self, request, *args, **kwargs):
+        """ Вывод всех подходящих продуктов"""
         query = Q(shop__order_accepting=True)
         shop_id = request.query_params.get('shop_id')
         category_id = request.query_params.get('category_id')
@@ -233,7 +192,12 @@ class ProductInfoViewSet(ViewSet):
         serializer = ProductInfoINSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        responses={200: ProductInfoINSerializer,
+                   400: ResponseErrorSerializer}
+    )
     def retrieve(self, request, pk=None):
+        """Вывод конкретного продукта"""
         try:
             product = ProductInfo.objects.get(id=pk)
         except ObjectDoesNotExist as e:
