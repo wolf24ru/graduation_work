@@ -1,6 +1,0 @@
-Django~=4.0.4
-ujson~=5.2.0
-djangorestframework~=3.13.1
-category~=0.1.0
-requests~=2.27.1
-PyYAML~=6.0

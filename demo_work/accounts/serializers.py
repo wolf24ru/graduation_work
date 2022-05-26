@@ -109,4 +109,4 @@ class RespoonseNewTokenSerializer(serializers.Serializer):
     new_token = serializers.StringRelatedField(default='Token')
 
     class Meta:
-        fields = ('user', 'new_token',)
+        fields = ('user', 'new_token')

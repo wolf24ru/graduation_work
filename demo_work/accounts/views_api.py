@@ -190,6 +190,7 @@ class ContactView(APIView):
                                               'Use api/v1/location/location_inform'}, status=400)
 
         return JsonResponse({'Error': 'unexpected argument'}, status=400)
+
     # TODO разобраться почему не отображается request
     @extend_schema(
         request=RequestContactDelete,
