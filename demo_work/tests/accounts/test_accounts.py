@@ -6,6 +6,7 @@ import ast
 
 
 def test_something():
+    """Проверка работы тестов"""
     assert True
 
 
@@ -54,6 +55,7 @@ def test_something():
 )
 @pytest.mark.django_db
 def test_create_account(client, json_data, expected_status, url):
+    """Создание аккаунта"""
     url += reverse('registration')
     response = client.post(url, json_data, format='json')
     assert response.status_code == expected_status
@@ -61,6 +63,7 @@ def test_create_account(client, json_data, expected_status, url):
 
 @pytest.mark.django_db
 def test_get_user_filling(client, url, user_factory, get_token_url, token_factory):
+    """Получение информации о пользователи"""
     token = token_factory()
     url += reverse('user_filling')
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -100,6 +103,7 @@ def test_get_user_filling(client, url, user_factory, get_token_url, token_factor
 )
 @pytest.mark.django_db
 def test_post_user_filling(client, url, get_token_url, token_factory, json_data, expected_status):
+    """Изменение информации пользователя"""
     token = token_factory()
     url += reverse('user_filling')
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -121,6 +125,7 @@ def test_post_user_filling(client, url, get_token_url, token_factory, json_data,
                          )
 @pytest.mark.django_db
 def test_get_vendor_status(url, token_factory, shop_factory, client, _type, expected_status):
+    """Получение статуса магазина"""
     _token = token_factory(user__type=_type)
     shop_factory(user=_token.user)
     url += reverse('order_accepting')
@@ -143,6 +148,7 @@ def test_get_vendor_status(url, token_factory, shop_factory, client, _type, expe
                          )
 @pytest.mark.django_db
 def test_post_vendor_status(url, token_factory, shop_factory, client, _type, expected_status):
+    """Изменение статуса магазина"""
     _token = token_factory(user__type=_type)
     _shop = shop_factory(user=_token.user)
     url += reverse('order_accepting')
@@ -156,6 +162,7 @@ def test_post_vendor_status(url, token_factory, shop_factory, client, _type, exp
 
 @pytest.mark.django_db
 def test_get_contact(client, token_factory, contact_factory, url):
+    """Получение контактов пользователя"""
     url += reverse('contacts')
     _token = token_factory()
     _contact = contact_factory(user=_token.user)
@@ -262,7 +269,8 @@ def test_get_contact(client, token_factory, contact_factory, url):
     )
 )
 @pytest.mark.django_db
-def test_post_delete_contact(client, token_factory, url, json_data, region_city_factory, expected_status):
+def test_post_contact(client, token_factory, url, json_data, region_city_factory, expected_status):
+    """Добавление контакта пользователя"""
     url += reverse('contacts')
     _token = token_factory()
     _rc = region_city_factory(_quantity=3)
@@ -287,6 +295,7 @@ def test_post_delete_contact(client, token_factory, url, json_data, region_city_
 
 @pytest.mark.django_db
 def test_delete_contact(client, token_factory, contact_factory, url):
+    """Удаление контакта пользователя"""
     url += reverse('contacts')
     _token = token_factory()
     _contact = contact_factory(user=_token.user)
@@ -365,6 +374,7 @@ def test_delete_contact(client, token_factory, contact_factory, url):
 )
 @pytest.mark.django_db
 def test_put_contact(client, token_factory, contact_factory, url, region_city_factory, json_data, expected_status):
+    """Изменение контакта пользователя"""
     url += reverse('contacts')
     _token = token_factory()
     _rc = region_city_factory(_quantity=3)
@@ -395,6 +405,7 @@ def test_put_contact(client, token_factory, contact_factory, url, region_city_fa
 
 @pytest.mark.django_db
 def test_new_token(client, url):
+    """ПОлучение новго токена"""
     # регистарция полльзователя
     email = 'email@mail.ru'
     password = 'qwertygh12345'
@@ -408,6 +419,7 @@ def test_new_token(client, url):
     _url = url + reverse('registration')
     re = client.post(_url, json_data, format='json')
     # получение токена
+
     url_token = url + '/api-token-auth/'
     token = client.post(url_token, {"username": email,
                                     "password": password}).data['token']
