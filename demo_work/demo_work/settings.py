@@ -47,7 +47,49 @@ INSTALLED_APPS = [
     'product',
     'location',
     'order',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.vk',
+    'allauth.socialaccount.providers.yandex'
 ]
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+
+SOCIALACCOUNT_PROVIDERS = {
+
+    'google': {
+        'APP': {
+            'client_id': os.getenv('GOOGLE_ID'),
+            'secret': os.getenv('GOOGLE_SECRET'),
+            'key': ''
+        },
+        'SCOPE': [
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
+    'yandex': {
+        'APP': {
+            'client_id': os.getenv('YANDEX_ID'),
+            'secret': os.getenv('YANDEX_SECRET'),
+            'key': ''
+        }
+    },
+    'vk': {
+            'APP': {
+
+                'client_id': os.getenv('KV_ID'),
+                'secret': os.getenv('VK_SECRET'),
+                'key': ''
+                   }
+          },
+}
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 MIDDLEWARE = [
@@ -59,7 +101,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'https://127.0.0.1:8000']
 ROOT_URLCONF = 'demo_work.urls'
 
 TEMPLATES = [
@@ -73,12 +115,17 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'demo_work.wsgi.application'
+
+AUTHENTICATION_BACKENDS = [
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
