@@ -16,13 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.authtoken import views
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from drf_urlsspectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from accounts.views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api-token-auth/', views.obtain_auth_token),
-    path('api/v1/accounts/', include('accounts.urls')),
+    path('api/v1/accounts/', include('accounts.urls_api')),
+    path('accounts/', include('accounts.urls')),
     path('api/v1/location/', include('location.urls')),
     path('api/v1/product/', include('product.urls')),
     path('api/v1/category/', include('category.urls')),
@@ -31,4 +33,8 @@ urlpatterns = [
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('accounts/', include('allauth.urls')),
+
+    path('', home, name='home'),
 ]
+
+
